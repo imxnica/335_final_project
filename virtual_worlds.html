@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virtual Worlds — ANCHORED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink-light: #fce8ed;
+    --pink-soft: #f7c5d0;
+    --pink-mid: #f0a0b5;
+    --pink-deep: #e0607a;
+    --pink-hot: #d63f60;
+    --cream: #fdf6f0;
+    --cream-dark: #f5ede4;
+    --warm-brown: #7a4a3a;
+    --text-dark: #3a2228;
+    --text-mid: #8a5a60;
+    --white: #ffffff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 3rem;
+    background: rgba(253, 246, 240, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--pink-soft);
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    color: var(--pink-hot);
+    letter-spacing: 0.05em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--pink-hot); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    padding-top: 80px;
+  }
+
+  .hero-bg-circles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .hero-bg-circles span {
+    position: absolute;
+    border-radius: 50%;
+    background: var(--pink-light);
+    opacity: 0.6;
+    animation: floatCircle 8s ease-in-out infinite;
+  }
+
+  .hero-bg-circles span:nth-child(1) { width: 500px; height: 500px; top: -100px; right: -80px; animation-delay: 0s; }
+  .hero-bg-circles span:nth-child(2) { width: 300px; height: 300px; bottom: 50px; left: -60px; background: var(--pink-soft); opacity: 0.4; animation-delay: 2s; }
+  .hero-bg-circles span:nth-child(3) { width: 180px; height: 180px; top: 40%; left: 30%; background: var(--pink-mid); opacity: 0.15; animation-delay: 4s; }
+
+  @keyframes floatCircle {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .hero-content {
+    display: flex;
+    align-items: flex-end;
+    gap: 3rem;
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+    padding: 0 2rem;
+  }
+
+  .pixel-char-wrap {
+    flex-shrink: 0;
+    position: relative;
+    animation: charFloat 3s ease-in-out infinite;
+  }
+
+  @keyframes charFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  .pixel-char-wrap img {
+    width: 160px;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 8px 24px rgba(214, 63, 96, 0.25));
+  }
+
+  .hero-text-side {
+    flex: 1;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    background: var(--pink-deep);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 0.35rem 1rem;
+    border-radius: 100px;
+    margin-bottom: 1.2rem;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    line-height: 1.05;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--pink-hot);
+  }
+
+  .hero-subtitle {
+    font-size: 0.85rem;
+    font-weight: 300;
+    color: var(--text-mid);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+
+  /* Speech bubble */
+  .speech-bubble {
+    background: white;
+    border: 1.5px solid var(--pink-soft);
+    border-radius: 18px 18px 18px 4px;
+    padding: 1.2rem 1.5rem;
+    max-width: 420px;
+    position: relative;
+    box-shadow: 4px 6px 24px rgba(214, 63, 96, 0.08);
+  }
+
+  .speech-bubble p {
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--text-dark);
+    font-weight: 300;
+  }
+
+  .speech-bubble p + p { margin-top: 0.7rem; }
+
+  .speech-bubble .name-tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--pink-hot);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  /* scroll hint */
+  .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    opacity: 0.7;
+    animation: scrollBounce 2s ease-in-out infinite;
+  }
+
+  .scroll-hint::after {
+    content: '';
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--pink-mid), transparent);
+  }
+
+  @keyframes scrollBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
+  }
+
+  /* ── SECTIONS COMMON ── */
+  section {
+    padding: 7rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--pink-deep);
+    margin-bottom: 0.8rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    color: var(--text-dark);
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, var(--pink-soft), transparent);
+    margin: 0 auto;
+  }
+
+  /* ── ABOUT SECTION ── */
+  #about {
+    display: flex;
+    gap: 5rem;
+    align-items: center;
+    padding: 6rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    background: var(--cream-dark);
+    border-radius: 2rem;
+    margin-top: 0;
+  }
+
+  .about-text { flex: 1; }
+
+  .about-text p {
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: var(--text-mid);
+    font-weight: 300;
+    margin-bottom: 1rem;
+  }
+
+  .about-text p strong {
+    color: var(--text-dark);
+    font-weight: 500;
+  }
+
+  .about-deco {
+    flex-shrink: 0;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .about-deco .stat-pill {
+    background: white;
+    border: 1px solid var(--pink-soft);
+    border-radius: 100px;
+    padding: 0.6rem 1.4rem;
+    font-size: 0.75rem;
+    color: var(--text-mid);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .about-deco .stat-pill strong {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--pink-hot);
+  }
+
+  /* ── MOODBOARD ── */
+  #moodboard {
+    padding: 7rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .mb-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    margin-top: 3rem;
+  }
+
+  .polaroid {
+    background: white;
+    padding: 7px 7px 26px;
+    border: 1px solid #edddd8;
+    border-radius: 2px;
+    box-shadow: 2px 3px 10px rgba(160,80,90,0.08);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+  }
+
+  .polaroid:hover {
+    animation: wobble 0.45s ease infinite;
+    box-shadow: 4px 8px 20px rgba(214, 63, 96, 0.15);
+    z-index: 5;
+  }
+
+  @keyframes wobble {
+    0%   { transform: rotate(0deg) scale(1.04); }
+    25%  { transform: rotate(-2deg) scale(1.05); }
+    75%  { transform: rotate(2deg) scale(1.05); }
+    100% { transform: rotate(0deg) scale(1.04); }
+  }
+
+  .polaroid-img {
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--pink-light);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .polaroid-img img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .polaroid-placeholder {
+    font-size: 11px;
+    color: var(--pink-mid);
+    text-align: center;
+    padding: 4px;
+    font-weight: 300;
+  }
+
+  .polaroid-caption {
+    font-size: 9px;
+    text-align: center;
+    color: var(--text-mid);
+    margin-top: 5px;
+    font-style: italic;
+    letter-spacing: 0.04em;
+  }
+
+  .polaroid-num {
+    position: absolute;
+    top: 5px; right: 7px;
+    font-size: 8px;
+    color: #cbb0b8;
+    font-weight: 500;
+  }
+
+  /* lightbox */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(58, 34, 40, 0.8);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    backdrop-filter: blur(6px);
+  }
+  .lightbox.active { display: flex; }
+
+  .lb-card {
+    background: white;
+    padding: 10px 10px 36px;
+    border-radius: 2px;
+    max-width: 420px;
+    width: 90%;
+    animation: popIn 0.22s ease;
+    box-shadow: 0 20px 60px rgba(58,34,40,0.3);
+  }
+  @keyframes popIn {
+    from { transform: scale(0.85) rotate(-2deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .lb-img {
+    width: 100%; aspect-ratio: 1;
+    background: var(--pink-light);
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .lb-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  .lb-meta { text-align: center; margin-top: 10px; }
+  .lb-meta .lb-num { font-size: 10px; color: var(--pink-mid); letter-spacing: 0.1em; }
+  .lb-meta .lb-label { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--text-dark); font-style: italic; }
+
+  .lb-close {
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 38px; height: 38px;
+    font-size: 18px;
+    color: var(--text-dark);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-family: sans-serif;
+  }
+
+  /* ── STORYBOARD ── */
+  #storyboard {
+    padding: 7rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+
+  /* macOS-style browser chrome */
+  .browser-chrome {
+    background: #e8e0dc;
+    border-radius: 10px 10px 0 0;
+    padding: 10px 16px 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #d5cbc6;
+    border-bottom: none;
+  }
+
+  .browser-dots { display: flex; gap: 6px; }
+  .browser-dots span {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+  }
+  .browser-dots span:nth-child(1) { background: #ff5f57; }
+  .browser-dots span:nth-child(2) { background: #febc2e; }
+  .browser-dots span:nth-child(3) { background: #28c840; }
+
+  .browser-url {
+    flex: 1;
+    background: white;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: #888;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+  }
+
+  .sb-stage {
+    background: #f0e8e2;
+    border: 1px solid #d5cbc6;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+  }
+
+  /* stacked cards */
+  .sb-stack {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    height: 360px;
+  }
+
+  .sb-card {
+    position: absolute;
+    inset: 0;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 3px 5px 20px rgba(80,40,50,0.12);
+    overflow: hidden;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease;
+    cursor: pointer;
+  }
+
+  .sb-card.active {
+    transform: rotate(0deg) translateY(0) !important;
+    opacity: 1 !important;
+    z-index: 10;
+  }
+
+  .sb-card-img {
+    width: 100%;
+    height: 220px;
+    background: var(--pink-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .sb-card-img img { width: 100%; height: 100%; object-fit: cover; }
+
+  .sb-img-placeholder {
+    font-size: 13px;
+    color: var(--pink-mid);
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .sb-card-body {
+    padding: 1rem 1.2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* iMessage-style bubbles */
+  .imsg {
+    display: inline-flex;
+    align-self: flex-start;
+    padding: 7px 14px;
+    border-radius: 18px 18px 18px 4px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    max-width: 90%;
+  }
+
+  .imsg-title {
+    background: var(--pink-hot);
+    color: white;
+    font-weight: 500;
+    font-size: 0.78rem;
+    border-radius: 18px 18px 18px 4px;
+  }
+
+  .imsg-body {
+    background: var(--pink-hot);
+    color: white;
+    font-weight: 300;
+    font-size: 0.76rem;
+    border-radius: 4px 18px 18px 18px;
+    margin-top: 2px;
+    opacity: 0.88;
+  }
+
+  /* nav arrows */
+  .sb-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .sb-btn {
+    background: var(--pink-hot);
+    color: white;
+    border: none;
+    border-radius: 100px;
+    width: 42px; height: 42px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .sb-btn:hover { background: var(--pink-deep); transform: scale(1.05); }
+
+  .sb-counter {
+    font-size: 0.8rem;
+    color: var(--text-mid);
+    letter-spacing: 0.1em;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  /* ── PROCESS LOG ── */
+  #process {
+    padding: 7rem 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .process-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .process-card {
+    background: white;
+    border: 1px solid var(--pink-soft);
+    border-radius: 1.2rem;
+    padding: 2rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .process-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(to right, var(--pink-hot), var(--pink-soft));
+  }
+
+  .process-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(214, 63, 96, 0.1);
+  }
+
+  .process-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem;
+    color: var(--pink-light);
+    line-height: 1;
+    margin-bottom: 0.8rem;
+  }
+
+  .process-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    font-style: italic;
+  }
+
+  .process-card p {
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: var(--text-mid);
+    font-weight: 300;
+    margin-bottom: 0.8rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--text-dark);
+    color: white;
+    padding: 3rem;
+    text-align: center;
+  }
+
+  footer .foot-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--pink-soft);
+    margin-bottom: 0.5rem;
+    font-style: italic;
+  }
+
+  footer p {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── SCROLL FADE IN ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Monica Kim</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#moodboard">Moodboard</a></li>
+    <li><a href="#storyboard">Storyboard</a></li>
+    <li><a href="#process">Process</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg-circles">
+    <span></span><span></span><span></span>
+  </div>
+
+  <div class="hero-content">
+    <div class="pixel-char-wrap">
+      <img id="pixelChar" src="" alt="Monica pixel character">
+    </div>
+    <div class="hero-text-side">
+      <div class="hero-tag">Virtual Worlds — Final Project</div>
+      <h1 class="hero-title">The<br><em>ANCHORED</em><br>World</h1>
+      <p class="hero-subtitle">Comfort &nbsp;·&nbsp; Warmth &nbsp;·&nbsp; Enclosure</p>
+      <div class="speech-bubble">
+        <span class="name-tag">Monica Kim ✦</span>
+        <p>Hi!! Welcome to my project page — surprised to find yourself here? So was I, honestly.</p>
+        <p>While my render was running I figured I'd do something fun with the waiting time. All animations and 3D models on this project are made by me!</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">scroll</div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ABOUT -->
+<div style="padding: 0 3rem; max-width:1260px; margin: 0 auto;">
+<div id="about" class="fade-in">
+  <div class="about-text">
+    <p class="section-label">About This Page</p>
+    <h2 class="section-title" style="font-size:1.8rem;">Why does this even exist?</h2>
+    <p>So here's the thing — my render was taking <strong>way longer than expected</strong>, and touching anything on this computer while Maya is running? Absolutely terrifying. One wrong click and goodbye, 3 hours of work.</p>
+    <p>So instead of staring at the render progress bar, I used the waiting time to build this little page before graduation. My major is Computer Science, and I wanted to do something <strong>meaningful with code</strong> before finishing school.</p>
+    <p>This is my final project for Virtual Worlds — a 1-minute cinematic sequence built around <strong>THE ANCHORED</strong> atmosphere category: comfort, warmth, and enclosure. I hope you enjoy it, and I <em>really</em> hope you give it a good grade. 🙏</p>
+  </div>
+  <div class="about-deco">
+    <div class="stat-pill"><strong>1 min</strong>cinematic sequence</div>
+    <div class="stat-pill"><strong>20</strong>moodboard images</div>
+    <div class="stat-pill"><strong>6</strong>storyboard shots</div>
+    <div class="stat-pill"><strong>100%</strong>hand-modeled</div>
+  </div>
+</div>
+</div>
+
+<div class="divider" style="max-width:1200px; margin: 0 auto;"></div>
+
+<!-- MOODBOARD -->
+<section id="moodboard" class="fade-in">
+  <p class="section-label">01 — Visual Reference</p>
+  <h2 class="section-title">Moodboard</h2>
+  <p style="font-size:0.88rem; color:var(--text-mid); font-weight:300; max-width:540px;">
+    20 curated images that shaped the visual language of this project. Click to explore.
+  </p>
+
+  <div class="mb-grid" id="mbGrid"></div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <div class="lb-card">
+    <div class="lb-img" id="lbImg">
+      <span style="font-size:13px;color:var(--pink-mid);font-style:italic;">image here</span>
+    </div>
+    <div class="lb-meta">
+      <div class="lb-num" id="lbNum"></div>
+      <div class="lb-label" id="lbLabel"></div>
+    </div>
+  </div>
+  <button class="lb-close" id="lbClose">✕</button>
+</div>
+
+<div class="divider" style="max-width:1200px; margin: 0 auto;"></div>
+
+<!-- STORYBOARD -->
+<section id="storyboard" class="fade-in">
+  <p class="section-label">02 — Shot Breakdown</p>
+  <h2 class="section-title">Storyboard</h2>
+  <p style="font-size:0.88rem; color:var(--text-mid); font-weight:300; max-width:540px; margin-bottom: 2.5rem;">
+    Six shots that guide the camera from the outside world into the heart of the space. Click the arrows to navigate through the sequence.
+  </p>
+
+  <div class="browser-chrome">
+    <div class="browser-dots"><span></span><span></span><span></span></div>
+    <div class="browser-url">anchored-world.studio / storyboard</div>
+  </div>
+  <div class="sb-stage">
+    <div class="sb-stack" id="sbStack"></div>
+    <div class="sb-nav">
+      <button class="sb-btn" id="sbPrev">←</button>
+      <span class="sb-counter" id="sbCounter">01 / 06</span>
+      <button class="sb-btn" id="sbNext">→</button>
+    </div>
+  </div>
+</section>
+
+<div class="divider" style="max-width:1200px; margin: 0 auto;"></div>
+
+<!-- PROCESS LOG -->
+<section id="process" class="fade-in">
+  <p class="section-label">03 — Documentation</p>
+  <h2 class="section-title">Process Log</h2>
+  <p style="font-size:0.88rem; color:var(--text-mid); font-weight:300; max-width:540px;">
+    A breakdown of what was built, how it was constructed, and why every decision supports the ANCHORED atmosphere.
+  </p>
+
+  <div class="process-grid">
+    <div class="process-card fade-in">
+      <div class="process-num">01</div>
+      <h3>What is Shown</h3>
+      <p>This animation shows a small cozy house environment based on the atmosphere category "THE ANCHORED — Comfort." The scene begins with a wide exterior shot of the house and slowly moves closer before entering the interior space.</p>
+      <p>Inside the house, the camera focuses on furniture, lighting, and small decorative objects to create a calm and welcoming feeling.</p>
+      <p>The project focuses more on atmosphere and emotional comfort than narrative.</p>
+    </div>
+    <div class="process-card fade-in">
+      <div class="process-num">02</div>
+      <h3>How it is Built</h3>
+      <p>The environment was created in Autodesk Maya using a low poly art style. Most objects were modeled manually using simple polygon techniques. Arnold Renderer was used for lighting and rendering.</p>
+      <p>Warm lighting, pastel colors, and soft shadows were used throughout to create a cozy atmosphere. Additional area lights were placed near the windows to simulate sunlight entering the room.</p>
+      <p>Some detailed decorative objects were created in Nomad Sculpt on iPad and imported into Maya. The camera animation was created using keyframes — intentionally slow and smooth.</p>
+    </div>
+    <div class="process-card fade-in">
+      <div class="process-num">03</div>
+      <h3>Why it Supports the Atmosphere</h3>
+      <p>This project supports the "THE ANCHORED — Comfort" category through warm lighting, enclosed spaces, soft colors, and slow camera movement. The small house and interior decorations were designed to feel safe, peaceful, and personal.</p>
+      <p>Instead of using dramatic movement or intense lighting, the project focuses on calm visuals and comfortable pacing to create a relaxing atmosphere.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-title">The ANCHORED World</div>
+  <p>Monica Kim &nbsp;·&nbsp; Virtual Worlds Final Project &nbsp;·&nbsp; 2026</p>
+</footer>
+
+<script>
+// ── PIXEL CHAR ──
+document.getElementById('pixelChar').src = 'pixel_me.png';
+// ── MOODBOARD ──
+const mbCaptions = [
+  "warm enclosure","soft morning light","cozy corner","sheltered space",
+  "familiar textures","gentle shadows","amber afternoon","earthy tones",
+  "intimate scale","slow moments","layered fabrics","window light",
+  "still warmth","domestic calm","soft palette","grounded forms",
+  "rooted presence","safe distance","quiet stability","lived-in spaces"
+];
+
+const grid = document.getElementById('mbGrid');
+mbCaptions.forEach((cap, i) => {
+  const n = i + 1;
+  const el = document.createElement('div');
+  el.className = 'polaroid';
+  el.innerHTML = `
+    <span class="polaroid-num">${String(n).padStart(2,'0')}</span>
+    <div class="polaroid-img">
+      <img src="mood${n}.${(n >= 14 && n <= 16) ? 'png' : 'jpg'}" alt="${cap}">
+    </div>
+  `;
+  el.addEventListener('click', () => {
+    document.getElementById('lbNum').textContent = `image ${String(n).padStart(2,'0')} / 20`;
+    //document.getElementById('lbLabel').textContent = cap;
+    document.getElementById('lbImg').innerHTML =
+  `<img src="mood${n}.${(n >= 14 && n <= 16) ? 'png' : 'jpg'}" alt="${cap}">`;
+    document.getElementById('lightbox').classList.add('active');
+  });
+  grid.appendChild(el);
+});
+
+document.getElementById('lbClose').onclick = () => document.getElementById('lightbox').classList.remove('active');
+document.getElementById('lightbox').addEventListener('click', e => {
+  if (e.target === document.getElementById('lightbox')) document.getElementById('lightbox').classList.remove('active');
+});
+
+// ── STORYBOARD ──
+const shots = [
+  { title: "Wide Exterior Shot", body: "The animation begins with a wide shot of the entire environment to establish the cozy atmosphere and show the enclosed world." },
+  { title: "Closer Exterior View", body: "The camera slowly moves closer to the house to make the environment feel more personal and welcoming." },
+  { title: "Front Door View", body: "The front door becomes the focus to guide the viewer into the interior space." },
+  { title: "Entering Interior", body: "The camera enters the interior space to create a stronger feeling of warmth and comfort." },
+  { title: "Interior Pan", body: "Slow camera movement allows the viewer to observe the soft lighting and cozy objects naturally." },
+  { title: "Final Relaxed Shot", body: "The animation ends on a calm interior shot to maintain the peaceful atmosphere." }
+];
+
+const stack = document.getElementById('sbStack');
+let current = 0;
+
+function buildStack() {
+  stack.innerHTML = '';
+  shots.forEach((shot, i) => {
+    const card = document.createElement('div');
+    card.className = 'sb-card';
+    card.dataset.index = i;
+
+    card.innerHTML = `
+      <div class="sb-card-img">
+        <img src="storyboard${i + 1}.png" alt="${shot.title}">
+      </div>
+      <div class="sb-card-body">
+        <span class="imsg imsg-title">${shot.title}</span>
+        <span class="imsg imsg-body">${shot.body}</span>
+      </div>
+    `;
+    stack.appendChild(card);
+  });
+  updateStack();
+}
+
+function updateStack() {
+  const cards = stack.querySelectorAll('.sb-card');
+  cards.forEach((card, i) => {
+    const diff = i - current;
+    card.classList.remove('active');
+    if (diff === 0) {
+      card.classList.add('active');
+      card.style.zIndex = 10;
+      card.style.transform = 'rotate(0deg) translateY(0px)';
+      card.style.opacity = '1';
+    } else if (diff < 0) {
+      // already passed — hide behind
+      card.style.zIndex = 0;
+      card.style.transform = `rotate(${diff * 1.5}deg) translateY(${diff * 8}px) scale(0.96)`;
+      card.style.opacity = '0.6';
+    } else {
+      // upcoming — stacked behind
+      card.style.zIndex = 10 - diff;
+      card.style.transform = `rotate(${diff * 1.2}deg) translateY(${diff * 6}px) scale(${1 - diff * 0.03})`;
+      card.style.opacity = diff > 2 ? '0' : `${1 - diff * 0.25}`;
+    }
+  });
+  document.getElementById('sbCounter').textContent = `0${current + 1} / 06`;
+}
+
+document.getElementById('sbNext').onclick = () => {
+  current = (current + 1) % shots.length;
+  updateStack();
+};
+document.getElementById('sbPrev').onclick = () => {
+  current = (current - 1 + shots.length) % shots.length;
+  updateStack();
+};
+
+buildStack();
+
+// ── SCROLL FADE IN ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
